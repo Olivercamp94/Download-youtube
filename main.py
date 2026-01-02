@@ -9,9 +9,8 @@ from config import config
 pbar = None
 
 def create_directory(directory_name):
-    directory_name = f"../{directory_name}"
-    if not os.path.exists(directory_name):
-        os.makedirs(directory_name)
+    if not os.path.exists("../storage") and not os.path.exists(f"../{directory_name}"):
+      os.makedirs(directory_name)
 
 def progress_hook(d):
     global pbar
@@ -46,11 +45,19 @@ def download_with_timeout(url, only_audio):
     create_directory("music")
     create_directory("movies")
 
-    output_directory = (
+    output_directory = None
+    if os.path.exists("../storage"):
+      output_directory = (
+        "../storage/music/%(title)s.%(ext)s"
+        if only_audio else
+        "../storage/movies/%(title)s.%(ext)s"
+      )
+    else:
+       output_directory = (
         "../music/%(title)s.%(ext)s"
         if only_audio else
         "../movies/%(title)s.%(ext)s"
-    )
+      )
 
     ydl_opts = {
         "format": "bestaudio/best" if only_audio else "bestvideo[height<=360]+bestaudio/best",
@@ -84,8 +91,8 @@ def download_with_timeout(url, only_audio):
 
             offline_time += config.RETRY_INTERVAL
             print(
-                f"\nSem conexão ({offline_time}/{MAX_OFFLINE_TIME}s). "
-                f"Tentando novamente em {RETRY_INTERVAL}s..."
+                f"\nSem conexão ({offline_time}/{config.MAX_OFFLINE_TIME}s). "
+                f"Tentando novamente em {config.RETRY_INTERVAL}s..."
             )
             time.sleep(config.RETRY_INTERVAL)
 
