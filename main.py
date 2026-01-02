@@ -69,13 +69,14 @@ def download_with_timeout(url, only_audio):
         "socket_timeout": config.SOCKET_TIMEOUT,
         "retries": 1,
         "fragment_retries": 1,
+    }
 
-        'postprocessors': [{
+    if only_audio:
+        ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '128',  # Qualidade ajustada para 128kbps
-         }],
-    }
+#            'preferredquality': '128',  # Qualidade ajustada para 128kbps
+         }]
 
     offline_time = 0
 
@@ -91,8 +92,11 @@ def download_with_timeout(url, only_audio):
 
             offline_time += config.RETRY_INTERVAL
             print(
-                f"\nSem conexão ({offline_time}/{config.MAX_OFFLINE_TIME}s). "
-                f"Tentando novamente em {config.RETRY_INTERVAL}s..."
+                f"\nErro!!  ({offline_time}s/{config.MAX_OFFLINE_TIME}s).\n",
+                f"_"*30,
+                f"\n{type(e).__name__}: {e} \n",
+                f"_"*30,
+                f"\n\nTentando novamente em {config.RETRY_INTERVAL}s..."
             )
             time.sleep(config.RETRY_INTERVAL)
 
