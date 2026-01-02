@@ -75,7 +75,7 @@ def download_with_timeout(url, only_audio):
         ydl_opts['postprocessors'] = [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-#            'preferredquality': '128',  # Qualidade ajustada para 128kbps
+            'preferredquality': 'best',  # Qualidade ajustada para 128kbps
          }]
 
     offline_time = 0
@@ -86,19 +86,29 @@ def download_with_timeout(url, only_audio):
                 ydl.download([url])
             return  # sucesso
 
+
         except Exception as e:
+
             if pbar:
                 pbar.close()
 
-            offline_time += config.RETRY_INTERVAL
-            print(
+            msg = str(e)
+
+            if "Errno 7" in msg or "timed out" in msg:
+              offline_time += config.RETRY_INTERVAL
+              print(
                 f"\nErro!!  ({offline_time}s/{config.MAX_OFFLINE_TIME}s).\n",
                 f"_"*30,
                 f"\n{type(e).__name__}: {e} \n",
                 f"_"*30,
                 f"\n\nTentando novamente em {config.RETRY_INTERVAL}s..."
-            )
-            time.sleep(config.RETRY_INTERVAL)
+              )
+              time.sleep(config.RETRY_INTERVAL)
+            elif "video unable" in msg.lower():
+              raise
+              main()
+            else:
+              raise
 
     raise SystemExit("Internet indisponível por tempo excessivo. Encerrando.")
 
